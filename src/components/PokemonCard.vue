@@ -28,7 +28,7 @@ export default {
   components: {
     PokemonDetails,
   },
-  props: ["pokemon", "index", "isLoadingImage"],
+  props: ["pokemon", "index"],
   data() {
     return {
       showModal: false,

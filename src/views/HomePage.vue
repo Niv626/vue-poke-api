@@ -46,6 +46,7 @@ export default {
       isLoadingPokemons: false,
       error: null,
       offset: 0,
+      totalNumOFPokemons: 0,
     };
   },
   methods: {
@@ -62,6 +63,7 @@ export default {
       if (response.ok) {
         this.isLoadingPokemons = false;
         const pokemons = await response.json();
+        this.totalNumOFPokemons = pokemons.count;
         pokemons.results.forEach(async (pokemon) => {
           const res = await fetch(pokemon.url);
           if (res.ok) {
@@ -83,11 +85,15 @@ export default {
         this.error = true;
       }
       if (this.offset > 0) {
-        window.scrollTo(
-          5,
-          document.documentElement.scrollHeight || document.body.scrollHeight
-        );
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight;
+        const offset = 100;
+        const scrollToY = scrollHeight - clientHeight - offset;
+        window.scrollTo({
+          top: scrollToY,
+        });
       }
+
       this.offset += 50;
     },
 
@@ -106,20 +112,20 @@ export default {
     this.fetchPokemons();
     let timeoutId = null;
 
-    const handleScroll = () => {
+    const handleScrollBottom = () => {
       clearTimeout(timeoutId);
-
       timeoutId = setTimeout(() => {
         if (
           window.innerHeight + Math.round(window.scrollY) >=
-          document.body.offsetHeight
+            document.body.offsetHeight &&
+          this.totalNumOFPokemons >= this.offset
         ) {
           this.fetchPokemons();
         }
-      }, 200);
+      }, 400);
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScrollBottom);
   },
 };
 </script>
@@ -138,9 +144,9 @@ export default {
   display: flex;
   justify-content: center;
   font-size: 50px;
-  background-image: radial-gradient(circle, #4c0bff, #f44da7);
-  color: transparent;
-  -webkit-background-clip: text;
+  color: #ef0080;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  -webkit-text-stroke: 2px #000; /* Outline color and width */
 }
 
 .pokemon-card {
