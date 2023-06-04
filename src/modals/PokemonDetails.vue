@@ -92,6 +92,9 @@ export default {
 
 .modal-body {
   padding: 20px 80px 40px 80px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 ul {
