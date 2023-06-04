@@ -11,12 +11,7 @@
     </div>
   </div>
   <h2 class="pokemon-title-card">{{ pokemon.name }}</h2>
-  <PokemonDetails
-    v-if="pokemon.isModalOpen"
-    @close="closeModal(index)"
-    :pokemon="pokemon"
-    :key="pokemon.name"
-  />
+  <slot></slot>
 </template>
 
 <script>
@@ -24,7 +19,7 @@ import PokemonDetails from "../modals/PokemonDetails.vue";
 
 export default {
   name: "PokemonCard",
-  emits: ["close", "handleImageLoad"],
+  emits: ["handleImageLoad"],
   components: {
     PokemonDetails,
   },
@@ -36,9 +31,6 @@ export default {
     };
   },
   methods: {
-    closeModal() {
-      this.$emit("close");
-    },
     handleImageLoad() {
       this.$emit("handleImageLoad");
     },

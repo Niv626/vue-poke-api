@@ -15,11 +15,17 @@
         :pokemon="pokemon"
         v-if="!isLoadingPokemons"
         @handleImageLoad="handleImageLoad(index)"
-        @close="closeModal(index)"
-      ></PokemonCard>
+      >
+        <PokemonDetails
+          v-if="pokemon.isModalOpen"
+          @close="closeModal(index)"
+          :pokemon="pokemon"
+          :key="pokemon.name"
+        />
+      </PokemonCard>
     </div>
 
-    <h2 v-else class="loading loading-pokemons">
+    <h2 v-else :class="['loading', 'loading-pokemons']">
       <div v-if="pokemons.length > 0">Loading More Pokemons</div>
       <div v-else>Loading Pokemons</div>
     </h2>
@@ -144,7 +150,7 @@ export default {
   display: flex;
   justify-content: center;
   font-size: 50px;
-  color: #ef0080;
+  color: #f44da7;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   -webkit-text-stroke: 2px #000; /* Outline color and width */
 }
@@ -166,7 +172,7 @@ export default {
 }
 
 .loading {
-  min-width: 242px;
+  min-width: 250px;
 }
 .loading::after {
   display: inline-block;
@@ -191,9 +197,8 @@ export default {
     content: "";
   }
 }
-.loading .loading-pokemons {
-  padding-top: 150px;
-  padding-left: 10px;
+.loading-pokemons {
+  display: flex;
 }
 
 .home-title {

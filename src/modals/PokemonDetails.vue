@@ -20,7 +20,7 @@
               </li>
               <div v-else>
                 <h2>Type:</h2>
-                <li>{{ pokemon.abilities[0].ability.name }}</li>
+                <li>{{ pokemon.abilities?.[0].ability?.name }}</li>
               </div>
               <li v-if="pokemon.abilities.length > 1">
                 <ul>
@@ -32,7 +32,7 @@
               </li>
               <div v-else>
                 <h2>Abilitiy:</h2>
-                <li>{{ pokemon.abilities[0].ability.name }}</li>
+                <li>{{ pokemon.abilities[0]?.ability?.name }}</li>
               </div>
             </ul>
           </div>
