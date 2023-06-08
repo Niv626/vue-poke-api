@@ -2,35 +2,46 @@
   <div class="home-title">
     <b>Pokémon World</b>
   </div>
+
   <div class="pokemon-grid">
     <div
       v-for="(pokemon, index) in pokemons"
       class="pokemon-card"
       @click="openModal(index)"
       :key="pokemon.id"
-      v-if="!isLoadingPokemons"
+      v-memo="[]"
     >
       <PokemonCard
+        v-if="!isLoadingPokemons"
         :key="pokemon.id"
         :pokemon="pokemon"
-        v-if="!isLoadingPokemons"
         @handleImageLoad="handleImageLoad(index)"
       >
         <PokemonDetails
           v-if="pokemon.isModalOpen"
           @close="closeModal(index)"
+          :key="index"
           :pokemon="pokemon"
-          :key="pokemon.name"
         />
       </PokemonCard>
     </div>
-
-    <h2 v-else :class="['loading', 'loading-pokemons']">
-      <div v-if="pokemons.length > 0">Loading More Pokemons</div>
-      <div v-else>Loading Pokemons</div>
-    </h2>
-    <h2 v-if="error" style="width: max-content">Failed To Load Page</h2>
   </div>
+
+  <div
+    v-show="isLoadingPokemons"
+    style="display: flex; justify-content: center"
+  >
+    <h2 v-if="pokemons.length === 0" :class="['loading', 'loading-pokemons']">
+      Loading Pokemons
+    </h2>
+    <h2
+      v-else-if="pokemons.length > 0"
+      :class="['loading', 'loading-pokemons']"
+    >
+      Loading More Pokemons
+    </h2>
+  </div>
+  <h2 v-if="error" style="width: max-content">Failed To Load Page</h2>
 </template>
 
 <script>
@@ -74,14 +85,11 @@ export default {
           const res = await fetch(pokemon.url);
           if (res.ok) {
             const data = await res.json();
-            this.pokemons = [
-              ...this.pokemons,
-              {
-                ...data,
-                isModalOpen: false,
-                isLoadingImage: true,
-              },
-            ];
+            this.pokemons.push({
+              ...data,
+              isModalOpen: false,
+              isLoadingImage: true,
+            });
           } else {
             console.error("error", res);
           }
@@ -90,16 +98,6 @@ export default {
         this.isLoadingPokemons = false;
         this.error = true;
       }
-      if (this.offset > 0) {
-        const scrollHeight = document.documentElement.scrollHeight;
-        const clientHeight = document.documentElement.clientHeight;
-        const offset = 100;
-        const scrollToY = scrollHeight - clientHeight - offset;
-        window.scrollTo({
-          top: scrollToY,
-        });
-      }
-
       this.offset += 50;
     },
 
