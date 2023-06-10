@@ -1,7 +1,7 @@
 <template>
-  <div class="home-title">
+  <h1 class="home-title">
     <b>Pokémon World</b>
-  </div>
+  </h1>
 
   <div class="pokemon-grid">
     <div
@@ -9,17 +9,10 @@
       class="pokemon-card"
       @click="openModal(index)"
       :key="pokemon.id"
-      v-memo="[]"
     >
-      <PokemonCard
-        v-if="!isLoadingPokemons"
-        :key="pokemon.id"
-        :pokemon="pokemon"
-        @handleImageLoad="handleImageLoad(index)"
-      >
-        <PokemonDetails
+      <PokemonCard :key="pokemon.name" :pokemon="pokemon">
+        <PokemonDetailsModal
           v-if="pokemon.isModalOpen"
-          @close="closeModal(index)"
           :key="index"
           :pokemon="pokemon"
         />
@@ -27,30 +20,21 @@
     </div>
   </div>
 
-  <div
-    v-show="isLoadingPokemons"
-    style="display: flex; justify-content: center"
-  >
-    <h2 v-if="pokemons.length === 0" :class="['loading', 'loading-pokemons']">
-      Loading Pokemons
-    </h2>
-    <h2
-      v-else-if="pokemons.length > 0"
-      :class="['loading', 'loading-pokemons']"
-    >
-      Loading More Pokemons
+  <div v-show="isLoadingPokemons" class="loading-pokemons">
+    <h2 :class="['loading', 'loading-pokemons']">
+      Loading {{ pokemons.length >= offset && "More" }} Pokemons
     </h2>
   </div>
   <h2 v-if="error" style="width: max-content">Failed To Load Page</h2>
 </template>
 
 <script>
-import PokemonDetails from "../modals/PokemonDetails.vue";
+import PokemonDetailsModal from "../modals/PokemonDetailsModal.vue";
 import PokemonCard from "../components/PokemonCard.vue";
 
 export default {
   components: {
-    PokemonDetails,
+    PokemonDetailsModal,
     PokemonCard,
   },
 
@@ -69,46 +53,48 @@ export default {
   methods: {
     async fetchPokemons() {
       this.isLoadingPokemons = true;
-      const response = await fetch(
-        `https://pokeapi.co/api/v2/pokemon?offset=${this.offset}&limit=50`
-      ).catch(() => {
-        this.error = true;
-        this.isLoadingPokemons = false;
-        return;
-      });
+      try {
+        const response = await fetch(
+          `https://pokeapi.co/api/v2/pokemon?offset=${this.offset}&limit=50`
+        );
 
-      if (response.ok) {
-        this.isLoadingPokemons = false;
-        const pokemons = await response.json();
-        this.totalNumOFPokemons = pokemons.count;
-        pokemons.results.forEach(async (pokemon) => {
-          const res = await fetch(pokemon.url);
-          if (res.ok) {
-            const data = await res.json();
-            this.pokemons.push({
-              ...data,
-              isModalOpen: false,
-              isLoadingImage: true,
-            });
-          } else {
-            console.error("error", res);
+        if (response.ok) {
+          const pokemons = await response.json();
+          this.totalNumOFPokemons = pokemons.count;
+          let promises = [];
+          for (const pokemon of pokemons.results) {
+            promises.push(
+              fetch(pokemon.url).then((response) => response.json())
+            );
           }
-        });
-      } else {
-        this.isLoadingPokemons = false;
+          try {
+            const data = await Promise.all(promises);
+            data.forEach((item) => {
+              this.pokemons.push({
+                ...item,
+                isModalOpen: false,
+                isLoadingImage: true,
+              });
+            });
+            this.isLoadingPokemons = false;
+          } catch (error) {
+            console.error("Error:", error);
+          }
+        } else {
+          this.isLoadingPokemons = false;
+          this.error = true;
+        }
+      } catch (error) {
+        console.error(error);
         this.error = true;
+      } finally {
+        this.isLoadingPokemons = false;
       }
+
       this.offset += 50;
     },
-
     openModal(index) {
       this.pokemons[index].isModalOpen = true;
-    },
-    closeModal(index) {
-      this.pokemons[index].isModalOpen = false;
-    },
-    handleImageLoad(index) {
-      this.pokemons[index].isLoadingImage = false;
     },
   },
 
@@ -201,5 +187,10 @@ export default {
 
 .home-title {
   padding-top: 17px;
+}
+
+.loading-pokemons {
+  display: flex;
+  justify-content: center;
 }
 </style>

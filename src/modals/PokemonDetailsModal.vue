@@ -3,42 +3,29 @@
     <div class="modal">
       <div class="modal-overlay" @click="closeModal"></div>
       <div class="modal-content">
-        <!-- <slot></slot> -->
         <div class="pokemon-modal-title">
           <h1>{{ pokemon.name }}</h1>
         </div>
         <div class="modal-body">
           <div class="column-1">
+            <h2>{{ pokemon.types.length > 1 ? "Types" : "Type" }}</h2>
             <ul>
-              <li v-if="pokemon.types.length > 1">
-                <ul>
-                  <h2>Types:</h2>
-                  <li v-for="kind in pokemon.types">
-                    {{ kind.type.name }}
-                  </li>
-                </ul>
+              <li v-for="kind in pokemon.types">
+                {{ kind.type.name }}
               </li>
-              <div v-else>
-                <h2>Type:</h2>
-                <li>{{ pokemon.abilities?.[0].ability?.name }}</li>
-              </div>
-              <li v-if="pokemon.abilities.length > 1">
-                <ul>
-                  <h2>Abilities:</h2>
-                  <li v-for="ability in pokemon.abilities">
-                    {{ ability.ability.name }}
-                  </li>
-                </ul>
+            </ul>
+            <h2>
+              {{ pokemon.abilities.length > 1 ? "Abilities" : "Ability" }}
+            </h2>
+            <ul>
+              <li v-for="ability in pokemon.abilities">
+                {{ ability.ability.name }}
               </li>
-              <div v-else>
-                <h2>Abilitiy:</h2>
-                <li>{{ pokemon.abilities[0]?.ability?.name }}</li>
-              </div>
             </ul>
           </div>
           <div class="column-2">
+            <h2>General:</h2>
             <ul>
-              <h2>General:</h2>
               <li>Height: {{ pokemon.height }}</li>
               <li>Weight: {{ pokemon.weight }}</li>
             </ul>
@@ -56,7 +43,7 @@ export default {
   emits: ["close"],
   methods: {
     closeModal() {
-      this.$emit("close");
+      this.pokemon.isModalOpen = false;
     },
   },
 };

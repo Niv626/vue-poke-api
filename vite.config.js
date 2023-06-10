@@ -5,9 +5,9 @@ export default defineConfig({
   plugins: [
     vue({
       template: {
-        compilerOptions: {
-          isCustomElement: (tag) => ["md-linedivider"].includes(tag),
-        },
+        // compilerOptions: {
+        //   isCustomElement: (tag) => ["md-linedivider"].includes(tag),
+        // },
       },
     }),
   ],

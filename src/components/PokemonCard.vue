@@ -1,38 +1,37 @@
 <template>
-  <div class="pokemon-image-card">
+  <div :key="pokemon.name">
     <div style="height: 96px; width: 96px">
-      <div v-if="pokemon.isLoadingImage" class="loading">Loading Image</div>
+      <div v-show="pokemon.isLoadingImage" class="loading">Loading Image</div>
       <img
-        v-show="!pokemon.isLoadingImage"
         :alt="pokemon.name"
-        @load="handleImageLoad(index)"
+        @load="handleImageLoad"
         :src="pokemon.sprites.front_default"
       />
     </div>
+    <h2 class="pokemon-title-card">{{ pokemon.name }}</h2>
   </div>
-  <h2 class="pokemon-title-card">{{ pokemon.name }}</h2>
   <slot></slot>
 </template>
 
 <script>
-import PokemonDetails from "../modals/PokemonDetails.vue";
+import PokemonDetails from "../modals/PokemonDetailsModal.vue";
 
 export default {
   name: "PokemonCard",
-  emits: ["handleImageLoad"],
   components: {
     PokemonDetails,
   },
-  props: ["pokemon", "index"],
+  props: ["pokemon"],
   data() {
     return {
       showModal: false,
       selectedPokemon: null,
+      isLoadinImage: true,
     };
   },
   methods: {
     handleImageLoad() {
-      this.$emit("handleImageLoad");
+      this.pokemon.isLoadingImage = false;
     },
   },
 };
