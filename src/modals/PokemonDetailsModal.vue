@@ -1,3 +1,16 @@
+<script setup>
+const props = defineProps({
+  pokemon: Object,
+});
+
+const emit = defineEmits(["close"]);
+
+const closeModal = () => {
+  props.pokemon.isModalOpen = false;
+  emit("close");
+};
+</script>
+
 <template>
   <Teleport to="body">
     <div class="modal">
@@ -10,7 +23,7 @@
           <div class="column-1">
             <h2>{{ pokemon.types.length > 1 ? "Types" : "Type" }}</h2>
             <ul>
-              <li v-for="kind in pokemon.types">
+              <li v-for="kind in pokemon.types" :key="kind.type.name">
                 {{ kind.type.name }}
               </li>
             </ul>
@@ -18,7 +31,10 @@
               {{ pokemon.abilities.length > 1 ? "Abilities" : "Ability" }}
             </h2>
             <ul>
-              <li v-for="ability in pokemon.abilities">
+              <li
+                v-for="ability in pokemon.abilities"
+                :key="ability.ability.name"
+              >
                 {{ ability.ability.name }}
               </li>
             </ul>
@@ -35,19 +51,6 @@
     </div>
   </Teleport>
 </template>
-
-<script>
-export default {
-  name: "PokemonDetails",
-  props: ["pokemon"],
-  emits: ["close"],
-  methods: {
-    closeModal() {
-      this.pokemon.isModalOpen = false;
-    },
-  },
-};
-</script>
 
 <style scoped>
 .modal {

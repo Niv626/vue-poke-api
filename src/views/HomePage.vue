@@ -1,13 +1,90 @@
+<script setup>
+import { ref, reactive, onMounted, computed, watch, watchEffect } from "vue";
+import PokemonDetailsModal from "../modals/PokemonDetailsModal.vue";
+import PokemonCard from "../components/PokemonCard.vue";
+
+const pokemons = ref([]);
+
+const isLoadingPokemons = ref(false);
+const error = ref(null);
+const offset = ref(0);
+const totalNumOFPokemons = ref(0);
+
+const fetchPokemons = async () => {
+  isLoadingPokemons.value = true;
+  try {
+    const response = await fetch(
+      `https://pokeapi.co/api/v2/pokemon?offset=${offset.value}&limit=50`
+    );
+
+    if (response.ok) {
+      const pokemonsData = await response.json();
+      totalNumOFPokemons.value = pokemonsData.count;
+      const promises = pokemonsData.results.map((pokemon) =>
+        fetch(pokemon.url).then((response) => response.json())
+      );
+      try {
+        const data = await Promise.all(promises);
+        data.forEach((item) => {
+          pokemons.value.push({
+            ...item,
+            isModalOpen: false,
+            isLoadingImage: true,
+          });
+        });
+        isLoadingPokemons.value = false;
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    } else {
+      isLoadingPokemons.value = false;
+      error.value = true;
+    }
+  } catch (error) {
+    console.error(error);
+    error.value = true;
+  } finally {
+    isLoadingPokemons.value = false;
+  }
+
+  offset.value += 50;
+};
+
+const openModal = (id) => {
+  const index = pokemons.value.findIndex((pokemon) => pokemon.id === id);
+  pokemons.value[index].isModalOpen = true;
+};
+
+onMounted(() => {
+  fetchPokemons();
+  let timeoutId = null;
+
+  const handleScrollBottom = () => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      if (
+        window.innerHeight + Math.round(window.scrollY) >=
+          document.body.offsetHeight &&
+        totalNumOFPokemons.value >= offset.value
+      ) {
+        fetchPokemons();
+      }
+    }, 400);
+  };
+
+  window.addEventListener("scroll", handleScrollBottom);
+});
+</script>
+
 <template>
   <h1 class="home-title">
     <b>Pokémon World</b>
   </h1>
-
   <div class="pokemon-grid">
     <div
       v-for="(pokemon, index) in pokemons"
       class="pokemon-card"
-      @click="openModal(index)"
+      @click="openModal(pokemon.id)"
       :key="pokemon.id"
     >
       <PokemonCard :key="pokemon.name" :pokemon="pokemon">
@@ -28,98 +105,6 @@
   <h2 v-if="error" style="width: max-content">Failed To Load Page</h2>
 </template>
 
-<script>
-import PokemonDetailsModal from "../modals/PokemonDetailsModal.vue";
-import PokemonCard from "../components/PokemonCard.vue";
-
-export default {
-  components: {
-    PokemonDetailsModal,
-    PokemonCard,
-  },
-
-  data() {
-    return {
-      pokemons: [],
-      isModalOpen: false,
-      selectedItem: null,
-      pokemon: {},
-      isLoadingPokemons: false,
-      error: null,
-      offset: 0,
-      totalNumOFPokemons: 0,
-    };
-  },
-  methods: {
-    async fetchPokemons() {
-      this.isLoadingPokemons = true;
-      try {
-        const response = await fetch(
-          `https://pokeapi.co/api/v2/pokemon?offset=${this.offset}&limit=50`
-        );
-
-        if (response.ok) {
-          const pokemons = await response.json();
-          this.totalNumOFPokemons = pokemons.count;
-          let promises = [];
-          for (const pokemon of pokemons.results) {
-            promises.push(
-              fetch(pokemon.url).then((response) => response.json())
-            );
-          }
-          try {
-            const data = await Promise.all(promises);
-            data.forEach((item) => {
-              this.pokemons.push({
-                ...item,
-                isModalOpen: false,
-                isLoadingImage: true,
-              });
-            });
-            this.isLoadingPokemons = false;
-          } catch (error) {
-            console.error("Error:", error);
-          }
-        } else {
-          this.isLoadingPokemons = false;
-          this.error = true;
-        }
-      } catch (error) {
-        console.error(error);
-        this.error = true;
-      } finally {
-        this.isLoadingPokemons = false;
-      }
-
-      this.offset += 50;
-    },
-    openModal(index) {
-      this.pokemons[index].isModalOpen = true;
-    },
-  },
-
-  async mounted() {
-    this.fetchPokemons();
-    let timeoutId = null;
-
-    const handleScrollBottom = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        if (
-          window.innerHeight + Math.round(window.scrollY) >=
-            document.body.offsetHeight &&
-          this.totalNumOFPokemons >= this.offset
-        ) {
-          this.fetchPokemons();
-        }
-      }, 400);
-    };
-
-    window.addEventListener("scroll", handleScrollBottom);
-  },
-};
-</script>
-
 <style>
 .pokemon-grid {
   display: grid;
@@ -128,6 +113,7 @@ export default {
   justify-content: space-evenly;
   padding-bottom: 50px;
   padding-top: 25px;
+  padding-inline: 90px;
 }
 
 .home-title {
