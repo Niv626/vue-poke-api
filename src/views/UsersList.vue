@@ -104,7 +104,7 @@ const isDisabled = computed(() => {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="user in filterUsers" :key="user.id">
+        <tr v-for="user in usersList" :key="user.id">
           <td>{{ user.name }}</td>
           <td>{{ user.email }}</td>
           <td>{{ user.age }}</td>
